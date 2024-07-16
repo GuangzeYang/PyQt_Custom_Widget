@@ -1,13 +1,17 @@
 from PyQt5.QAxContainer import QAxWidget
 from PyQt5.QtCore import pyqtSignal, QSize, Qt
 from PyQt5.QtGui import QIcon, QMovie
-from PyQt5.QtWidgets import QMessageBox, QDialog, QVBoxLayout, QDesktopWidget, QLabel, QHBoxLayout, QPushButton
+from PyQt5.QtWidgets import QMessageBox, QDialog, QVBoxLayout, QDesktopWidget, QLabel, QHBoxLayout, QPushButton, \
+    QApplication
 
 
-class PromptCenterTop(QMessageBox):
+class PromptCenterTop(QDialog):
     '''
     消息弹窗
     '''
+
+    closed_signal = pyqtSignal(str)
+
     def __init__(self, icon, title, text, buttons, default_btn=None):
         """
         :param icon: QMessageBox.Icon
@@ -15,7 +19,12 @@ class PromptCenterTop(QMessageBox):
         :param buttons: iter(QMessageBox.StandardButton)
         """
         super().__init__()
-        self.setStyleSheet("""
+        self.setWindowState(Qt.WindowMaximized)
+        self.setWindowFlags(Qt.FramelessWindowHint)
+        self.setWindowOpacity(0)
+        self.setAttribute(Qt.WA_TransparentForMouseEvents, True)
+        self.mb = QMessageBox(self)
+        self.mb.setStyleSheet("""
                     PromptCenterTop {
                         background-color: white;
                     }
@@ -27,8 +36,8 @@ class PromptCenterTop(QMessageBox):
                         border: 1px solid #8f8f91;
                         border-radius: 10px;
                         background-color: white;
-                        width: 100px;
-                        height: 40px;
+                        min-width: 80px;
+                        min-height: 30px;
                         font-size: 20px;
                     }
                     QPushButton:hover{
@@ -39,17 +48,21 @@ class PromptCenterTop(QMessageBox):
         pass
 
     def step_ui(self, icon, title, text, buttons, default_btn=None):
+        self.mb.setWindowTitle(title)
+        self.mb.setWindowIcon(QIcon('./static/imgs/splash.png'))
         self.setWindowTitle(title)
         self.setWindowIcon(QIcon('./static/imgs/splash.png'))
-        self.setIcon(icon)
-        self.setText(text)
+        self.mb.setIcon(icon)
+        self.mb.setText(text)
+
         for button in buttons:
-            self.addButton(button)
-        self.setWindowFlags(Qt.WindowCloseButtonHint)
-        screen_width = QDesktopWidget().screenGeometry().width()
-        screen_height = QDesktopWidget().screenGeometry().height()
-        self.move(int(screen_width / 2) - int(self.width() / 2), int(screen_height / 2) - int(self.height() / 2))
+            self.mb.addButton(button)
         pass
+
+    def exec(self):
+        self.show()
+        res = self.mb.exec()
+        return res
 
 
 class PDFViewer(QAxWidget):
