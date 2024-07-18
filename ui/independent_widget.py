@@ -31,9 +31,9 @@ class PromptCenterTop(QDialog):
                         border: 1px solid #8f8f91;
                         border-radius: 10px;
                         background-color: white;
-                        width: 100px;
-                        height: 40px;
-                        font-size: 20px;
+                        min-width: 70px;
+                        height: 30px;
+                        font-size: 15px;
                     }
                     QPushButton:hover{
                         background-color:#F5F5F5;
