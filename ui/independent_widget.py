@@ -1,10 +1,11 @@
 from PyQt5.QAxContainer import QAxWidget
 from PyQt5.QtCore import pyqtSignal, QSize, Qt
 from PyQt5.QtGui import QIcon, QMovie
-from PyQt5.QtWidgets import QMessageBox, QDialog, QVBoxLayout, QDesktopWidget, QLabel, QHBoxLayout, QPushButton
+from PyQt5.QtWidgets import QMessageBox, QDialog, QVBoxLayout, QDesktopWidget, QLabel, QHBoxLayout, QPushButton, \
+    QApplication
 
 
-class PromptCenterTop(QMessageBox):
+class PromptCenterTop(QDialog):
     '''
     消息弹窗
     '''
@@ -15,6 +16,9 @@ class PromptCenterTop(QMessageBox):
         :param buttons: iter(QMessageBox.StandardButton)
         """
         super().__init__()
+        self.setWindowState(Qt.WindowMaximized)
+        self.setWindowOpacity(0)
+        self.setWindowFlags(Qt.FramelessWindowHint)
         self.setStyleSheet("""
                     PromptCenterTop {
                         background-color: white;
@@ -35,20 +39,28 @@ class PromptCenterTop(QMessageBox):
                         background-color:#F5F5F5;
                     }
                 """)
+        self.setWindowTitle(title)
+        self.setWindowIcon(QIcon('./static/imgs/splash.png'))
         self.step_ui(icon, title, text, buttons, default_btn=None)
         pass
 
     def step_ui(self, icon, title, text, buttons, default_btn=None):
-        self.setWindowTitle(title)
-        self.setWindowIcon(QIcon('./static/imgs/splash.png'))
-        self.setIcon(icon)
-        self.setText(text)
+
+        self.mb_dia = QMessageBox(self)
+        self.mb_dia.setWindowTitle(title)
+        self.mb_dia.setWindowIcon(QIcon('./static/imgs/splash.png'))
+        self.mb_dia.setIcon(icon)
+        self.mb_dia.setText(text)
         for button in buttons:
-            self.addButton(button)
-        self.setWindowFlags(Qt.WindowCloseButtonHint)
-        screen_width = QDesktopWidget().screenGeometry().width()
-        screen_height = QDesktopWidget().screenGeometry().height()
-        self.move(int(screen_width / 2) - int(self.width() / 2), int(screen_height / 2) - int(self.height() / 2))
+            self.mb_dia.addButton(button)
+        pass
+
+    def exec(self):
+        self.showMaximized()
+        QApplication.processEvents()
+        res = self.mb_dia.exec()
+        self.close()
+        return res
         pass
 
 
