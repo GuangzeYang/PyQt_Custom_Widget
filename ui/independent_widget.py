@@ -18,7 +18,7 @@ class PromptCenterTop(QDialog):
         super().__init__()
         self.setWindowState(Qt.WindowMaximized)
         self.setWindowOpacity(0)
-        self.setWindowFlags(Qt.FramelessWindowHint)
+        self.setWindowFlags(Qt.FramelessWindowHint | Qt.WindowStaysOnTopHint)
         self.setStyleSheet("""
                     PromptCenterTop {
                         background-color: white;
