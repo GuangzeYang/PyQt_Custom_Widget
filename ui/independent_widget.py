@@ -4,19 +4,22 @@ from PyQt5.QtGui import QIcon, QMovie
 from PyQt5.QtWidgets import QMessageBox, QDialog, QVBoxLayout, QDesktopWidget, QLabel, QHBoxLayout, QPushButton, \
     QApplication
 
+from typing import Iterable
+
 
 class PromptCenterTop(QDialog):
     '''
-    消息弹窗
+    消息弹窗, 在QMessageBox上封装一层, 自带一些样式。需调用exec()显示
     '''
 
     closed_signal = pyqtSignal(str)
 
-    def __init__(self, icon, title, text, buttons, default_btn=None):
+    def __init__(self, icon, title:str, text:str, buttons:Iterable[QMessageBox.StandardButton], default_btn=None):
         """
         :param icon: QMessageBox.Icon
-        :param text: str
-        :param buttons: iter(QMessageBox.StandardButton)
+        :param title:
+        :param text:
+        :param buttons:
         """
         super().__init__()
         self.setWindowState(Qt.WindowMaximized)
