@@ -7,6 +7,7 @@ from PyQt5.QtWidgets import QMessageBox, QDialog, QVBoxLayout, QDesktopWidget, Q
 from typing import Iterable
 
 
+
 class PromptCenterTop(QDialog):
     '''
     消息弹窗, 在QMessageBox上封装一层, 自带一些样式。需调用exec()显示
@@ -47,6 +48,8 @@ class PromptCenterTop(QDialog):
                         background-color:#F5F5F5;
                     }
                 """)
+        self.setWindowTitle(title)
+        self.setWindowIcon(QIcon('./static/imgs/splash.png'))
         self.step_ui(icon, title, text, buttons, default_btn=None)
         pass
 
