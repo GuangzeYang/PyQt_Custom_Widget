@@ -2,10 +2,43 @@ from PyQt5.QAxContainer import QAxWidget
 from PyQt5.QtCore import pyqtSignal, QSize, Qt
 from PyQt5.QtGui import QIcon, QMovie
 from PyQt5.QtWidgets import QMessageBox, QDialog, QVBoxLayout, QDesktopWidget, QLabel, QHBoxLayout, QPushButton, \
-    QApplication
+    QApplication, QFrame, QWidget
 
 from typing import Iterable
 
+
+class HSeparateLine(QWidget):
+    def __init__(self, *args, separate_info: str = "", **kwargs):
+        super().__init__(*args, **kwargs)
+        self.separate_info = separate_info
+        self.setup_ui()
+        pass
+
+    def setup_ui(self):
+        self.hl_central = QHBoxLayout(self)
+
+        self.lb_separate_info = QLabel(self.separate_info)
+        self.line = QFrame()
+        self.line.setFrameShape(QFrame.HLine)
+        self.line.setFrameShadow(QFrame.Sunken)
+        self.line.setLineWidth(20)
+        self.line.setMidLineWidth(10)
+
+        self.hl_central.addWidget(self.lb_separate_info)
+        self.hl_central.addWidget(self.line, 1)
+
+
+class VSeparateLine(QFrame):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.setup_ui()
+        pass
+
+    def setup_ui(self):
+        self.setFrameShape(QFrame.HLine)
+        self.setFrameShadow(QFrame.Sunken)
+        self.setLineWidth(20)
+        self.setMidLineWidth(10)
 
 
 class PromptCenterTop(QDialog):
@@ -15,7 +48,7 @@ class PromptCenterTop(QDialog):
 
     closed_signal = pyqtSignal(str)
 
-    def __init__(self, icon, title:str, text:str, buttons:Iterable[QMessageBox.StandardButton], default_btn=None):
+    def __init__(self, icon, title: str, text: str, buttons: Iterable[QMessageBox.StandardButton], default_btn=None):
         """
         :param icon: QMessageBox.Icon
         :param title:
@@ -73,6 +106,7 @@ class PromptCenterTop(QDialog):
 
 class PDFViewer(QAxWidget):
     '''pdf查看，容器'''
+
     def __init__(self, pdf_path):
         super().__init__()
         self.openPdf(pdf_path)
@@ -88,7 +122,8 @@ class PDFViewer(QAxWidget):
 class RotationProgressDialog(QDialog):
     '''狗头加载弹窗'''
     btn_clicked = pyqtSignal()  # 设置按钮时，按钮的点击事件
-    def __init__(self, dia_size: QSize = QSize(150, 150), label:QLabel=None, btn:QPushButton=None, parent=None):
+
+    def __init__(self, dia_size: QSize = QSize(150, 150), label: QLabel = None, btn: QPushButton = None, parent=None):
         super().__init__(parent)
         self.__is_allow_close = False
         self.__exec_close_count = 0  # 大于0，被展示次数。 小于0，被关闭次数
