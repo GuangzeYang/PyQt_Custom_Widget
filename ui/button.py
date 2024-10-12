@@ -4,7 +4,8 @@ import sys
 from PyQt5.QtCore import Qt, QRect, QVariantAnimation, QPropertyAnimation, QSize, QParallelAnimationGroup, pyqtProperty, \
     QTimer, pyqtSignal
 from PyQt5.QtGui import QPainter, QFont, QBrush, QColor, QPen, QIcon
-from PyQt5.QtWidgets import QWidget, QPushButton, QGraphicsDropShadowEffect, QApplication
+from PyQt5.QtWidgets import QWidget, QPushButton, QGraphicsDropShadowEffect, QApplication, QHBoxLayout, QVBoxLayout, \
+    QLayout
 
 
 class SwitchButton(QWidget):
@@ -152,11 +153,15 @@ class ShadowPushButton(QPushButton):
 
 
 class HoverLargeButton(QPushButton):
-    """悬浮变大按钮"""
+    """
+    悬浮变大按钮
+    Note：
+        1.在布局中使用时，需要指定该按钮的左右限制（添加控件或加拉伸）。亦或可以设置布局的约束方式 hl_window.setSizeConstraint(QLayout.SetNoConstraint)
+    """
     mouse_enter = pyqtSignal(object)
     mouse_leave = pyqtSignal(object)
 
-    def __init__(self, *args, zoom_factor: float = 1.3, zoom_duration: int = 80, **kwargs):
+    def __init__(self, *args, zoom_factor: float = 1.2, zoom_duration: int = 80, **kwargs):
         super().__init__(*args, **kwargs)
         self._zoom_factor = zoom_factor
         self._zoom_duration = zoom_duration
@@ -190,9 +195,18 @@ class HoverLargeButton(QPushButton):
 
     def enterEvent(self, event):
         self.mouse_enter.emit(self)
+        # 更新当前控件大小
+        if self._is_zoom_out_finished:
+            self.update_compont_info()
+        else:
+            self.zoom_out_group.stop()
+            self._is_zoom_out_finished = True
+        self._is_use_size_hint = False
+
         # 形状放大。不关心动画的起始值是什么，只在乎动画的结束值必须是所有动画开始前的控件大小的zoom_factor倍
         start_rect = self.geometry()
         stop_rect = self.cal_zoom_in_rect()
+        print('enterEvent', start_rect, stop_rect)
         self.zoom_in_geometry.setStartValue(start_rect)
         self.zoom_in_geometry.setEndValue(stop_rect)
 
@@ -202,12 +216,7 @@ class HoverLargeButton(QPushButton):
         self.zoom_in_font.setStartValue(start_font_size)
         self.zoom_in_font.setEndValue(stop_font_size)
 
-        if self._is_zoom_out_finished:
-            self.update_compont_info()
-        else:
-            self.zoom_out_group.stop()
-            self._is_zoom_out_finished = True
-        self._is_use_size_hint = False
+
 
         self.zoom_in_group.start()
         self._is_zoom_in_finished = False
@@ -238,6 +247,7 @@ class HoverLargeButton(QPushButton):
     def sizeHint(self):
         if self._is_use_size_hint:
             return super().sizeHint()
+        print('@', self.change_value.size())
         return self.change_value.size()
 
     @property
@@ -279,6 +289,7 @@ class HoverLargeButton(QPushButton):
         center_point = self._geometry_before_zoom.center()
         end_width = self._geometry_before_zoom.width() * self._zoom_factor
         end_height = self._geometry_before_zoom.height() * self._zoom_factor
+        print('cal_zoom_in_rect', center_point, end_width, end_height)
         return QRect(
             int(center_point.x() - end_width // 2),  # 新左上角 x 坐标
             int(center_point.y() - end_height // 2),  # 新左上角 y 坐标
@@ -465,10 +476,15 @@ class HoverCircularButton(QPushButton):
 if __name__ == '__main__':
     app = QApplication(sys.argv)
     window = QWidget()
-    btn_test = HoverCircularButton(window)
-    btn_test.setIcon(QIcon('../../static/imgs/down_gray.png'))
-    btn_test.setIconSize(QSize(50, 50))
-    btn_test.move(100, 100)
+    window.resize(500, 500)
+    hl_window = QHBoxLayout(window)
+    hl_window.setSizeConstraint(QLayout.SetNoConstraint)
+    btn_test = HoverLargeButton('测试')
+    btn_test_2 = QPushButton('陪衬')
+    # hl_window.addStretch(1)
+    hl_window.addWidget(btn_test)
+    hl_window.addWidget(btn_test_2)
+    # hl_window.addStretch(1)
     window.show()
     sys.exit(app.exec_())
     pass

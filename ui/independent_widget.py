@@ -37,7 +37,7 @@ class VSeparateLine(QFrame):
         pass
 
     def setup_ui(self):
-        self.setFrameShape(QFrame.HLine)
+        self.setFrameShape(QFrame.VLine)
         self.setFrameShadow(QFrame.Sunken)
         self.setLineWidth(20)
         self.setMidLineWidth(10)
