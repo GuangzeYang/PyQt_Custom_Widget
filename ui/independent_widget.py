@@ -1,6 +1,8 @@
+import sys
+
 from PyQt5.QAxContainer import QAxWidget
 from PyQt5.QtCore import pyqtSignal, QSize, Qt
-from PyQt5.QtGui import QIcon, QMovie
+from PyQt5.QtGui import QIcon, QMovie, QFont
 from PyQt5.QtWidgets import QMessageBox, QDialog, QVBoxLayout, QDesktopWidget, QLabel, QHBoxLayout, QPushButton, \
     QApplication, QFrame, QWidget
 
@@ -48,7 +50,7 @@ class PromptCenterTop(QDialog):
 
     closed_signal = pyqtSignal(str)
 
-    def __init__(self, icon, title: str, text: str, buttons: Iterable[QMessageBox.StandardButton], default_btn=None):
+    def __init__(self, icon, title: str, text: str, buttons: Iterable[QMessageBox.StandardButton]=[QMessageBox.Ok], default_btn=None):
         """
         :param icon: QMessageBox.Icon
         :param title:
@@ -230,3 +232,78 @@ class RotationProgressDialog(QDialog):
         self.movie.deleteLater()
         self.close()
         pass
+
+
+class FadeOutPrompt(QDialog):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.init_params()
+        self.setup_ui()
+        pass
+
+    def init_params(self):
+        # 依靠最外部父控件来定位中心位置
+        self.setWindowFlags(Qt.FramelessWindowHint | Qt.WindowStaysOnTopHint | Qt.WindowMaximized)
+        self.setAttribute(Qt.WA_TranslucentBackground)
+
+        screen_size = QApplication.primaryScreen().size()
+        screen_width = screen_size.width()
+        screen_height = screen_size.height()
+        self.label_font = QFont()
+        self.label_font.setPointSize(round(screen_height/100 if screen_height < screen_width else screen_width/100))
+        self.qss = """
+                            QWidget{
+                                background-color: black;
+                                border:1px solid black;
+                                border-radius: 10%;
+                                padding-top: 20px;
+                                padding-bottom: 20px;
+                                padding-left: 30px;
+                                padding-right: 30px;
+                            }
+                            QLabel{
+                                color:white;
+                            }
+                        """
+        self.setStyleSheet(self.qss)
+
+        self.opacity
+        pass
+
+    def setup_ui(self):
+        self.vl_center = QVBoxLayout(self)
+        self.hl_center = QHBoxLayout()
+
+        self.wd_container = QWidget()
+        self.vl_container_center = QVBoxLayout(self.wd_container)
+        self.hl_container_center = QHBoxLayout()
+        self.lb_content = QLabel("你好")
+        self.lb_content.setFont(self.label_font)
+
+        # 使文本控件水平&垂直居中
+        self.hl_container_center.addStretch(1)
+        self.hl_container_center.addWidget(self.lb_content)
+        self.hl_container_center.addStretch(1)
+        self.vl_container_center.addStretch(1)
+        self.vl_container_center.addLayout(self.hl_container_center)
+        self.vl_container_center.addStretch(1)
+
+        self.hl_center.addStretch(1)
+        self.hl_center.addWidget(self.wd_container)
+        self.hl_center.addStretch(1)
+        self.vl_center.addStretch(1)
+        self.vl_center.addLayout(self.hl_center)
+        self.vl_center.addStretch(1)
+        pass
+
+
+
+
+
+if __name__ == '__main__':
+    app = QApplication(sys.argv)
+    # w = PromptCenterTop(QMessageBox.Warning, "提示", "tttttt")
+    w = FadeOutPrompt()
+    w.exec()
+    sys.exit(app.exec_())
+    pass
