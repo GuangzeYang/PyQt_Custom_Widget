@@ -167,7 +167,7 @@ class HoverLargeButton(QPushButton):
         self._zoom_duration = zoom_duration
         self._geometry_before_zoom = self.geometry()
         self._font_size_before_zoom = self.font().pointSizeF()
-        QTimer.singleShot(100, self.update_compont_info)
+        QTimer.singleShot(100, self.update_component_info)
         self._is_use_size_hint = True
 
         self.zoom_in_geometry = QPropertyAnimation(self, b'cus_geometry')
@@ -197,7 +197,7 @@ class HoverLargeButton(QPushButton):
         self.mouse_enter.emit(self)
         # 更新当前控件大小
         if self._is_zoom_out_finished:
-            self.update_compont_info()
+            self.update_component_info()
         else:
             self.zoom_out_group.stop()
             self._is_zoom_out_finished = True
@@ -206,7 +206,6 @@ class HoverLargeButton(QPushButton):
         # 形状放大。不关心动画的起始值是什么，只在乎动画的结束值必须是所有动画开始前的控件大小的zoom_factor倍
         start_rect = self.geometry()
         stop_rect = self.cal_zoom_in_rect()
-        print('enterEvent', start_rect, stop_rect)
         self.zoom_in_geometry.setStartValue(start_rect)
         self.zoom_in_geometry.setEndValue(stop_rect)
 
@@ -215,8 +214,6 @@ class HoverLargeButton(QPushButton):
         stop_font_size = self._font_size_before_zoom * self._zoom_factor
         self.zoom_in_font.setStartValue(start_font_size)
         self.zoom_in_font.setEndValue(stop_font_size)
-
-
 
         self.zoom_in_group.start()
         self._is_zoom_in_finished = False
@@ -245,9 +242,14 @@ class HoverLargeButton(QPushButton):
         pass
 
     def sizeHint(self):
+        """
+        1.
+        2. super返回的是控件最小推荐大小
+        :return:
+        """
         if self._is_use_size_hint:
-            return super().sizeHint()
-        print('@', self.change_value.size())
+            res = super().sizeHint()
+            return res
         return self.change_value.size()
 
     @property
@@ -281,6 +283,7 @@ class HoverLargeButton(QPushButton):
 
     def zoom_out_finish(self):
         self._is_zoom_out_finished = True
+        self._is_use_size_hint = True
 
     def zoom_in_finish(self):
         self._is_zoom_in_finished = True
@@ -289,7 +292,6 @@ class HoverLargeButton(QPushButton):
         center_point = self._geometry_before_zoom.center()
         end_width = self._geometry_before_zoom.width() * self._zoom_factor
         end_height = self._geometry_before_zoom.height() * self._zoom_factor
-        print('cal_zoom_in_rect', center_point, end_width, end_height)
         return QRect(
             int(center_point.x() - end_width // 2),  # 新左上角 x 坐标
             int(center_point.y() - end_height // 2),  # 新左上角 y 坐标
@@ -297,7 +299,7 @@ class HoverLargeButton(QPushButton):
             int(end_height)  # 新高度
         )
 
-    def update_compont_info(self):
+    def update_component_info(self):
         # 更新当前控件的几何信息
         self._geometry_before_zoom = self.geometry()
         self._font_size_before_zoom = self.font().pointSizeF()
@@ -315,7 +317,7 @@ class HoverCircularButton(QPushButton):
         self._geometry_before_zoom = self.geometry()
         self._font_size_before_zoom = self.font().pointSizeF()
         self._icon_size_before_zoom = self.iconSize()
-        QTimer.singleShot(100, self.update_compont_info)
+        QTimer.singleShot(100, self.update_component_info)
         self._is_use_size_hint = True
         self.marker = False
 
@@ -351,7 +353,7 @@ class HoverCircularButton(QPushButton):
     def enterEvent(self, event):
         self.mouse_enter.emit(self)
         if self._is_zoom_out_finished:
-            self.update_compont_info()
+            self.update_component_info()
         else:
             self.zoom_out_group.stop()
             self._is_zoom_out_finished = True
@@ -466,7 +468,7 @@ class HoverCircularButton(QPushButton):
             int(end_height)  # 新高度
         )
 
-    def update_compont_info(self):
+    def update_component_info(self):
         # 更新当前控件的几何信息
         self._geometry_before_zoom = self.geometry()
         self._font_size_before_zoom = self.font().pointSizeF()

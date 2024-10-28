@@ -1,10 +1,10 @@
 import sys
 
 from PyQt5.QAxContainer import QAxWidget
-from PyQt5.QtCore import pyqtSignal, QSize, Qt
+from PyQt5.QtCore import pyqtSignal, QSize, Qt, QPropertyAnimation, QVariantAnimation, QEasingCurve, QTime, QTimer
 from PyQt5.QtGui import QIcon, QMovie, QFont
 from PyQt5.QtWidgets import QMessageBox, QDialog, QVBoxLayout, QDesktopWidget, QLabel, QHBoxLayout, QPushButton, \
-    QApplication, QFrame, QWidget
+    QApplication, QFrame, QWidget, QGraphicsOpacityEffect
 
 from typing import Iterable
 
@@ -107,9 +107,12 @@ class PromptCenterTop(QDialog):
 
 
 class PDFViewer(QAxWidget):
-    '''pdf查看，容器'''
+    '''
+    pdf查看容器。
+    构造时给出pdf路径
+    '''
 
-    def __init__(self, pdf_path):
+    def __init__(self, pdf_path:str):
         super().__init__()
         self.openPdf(pdf_path)
         pass
@@ -122,7 +125,8 @@ class PDFViewer(QAxWidget):
 
 
 class RotationProgressDialog(QDialog):
-    '''狗头加载弹窗'''
+    """狗头加载弹窗"""
+
     btn_clicked = pyqtSignal()  # 设置按钮时，按钮的点击事件
 
     def __init__(self, dia_size: QSize = QSize(150, 150), label: QLabel = None, btn: QPushButton = None, parent=None):
@@ -235,49 +239,58 @@ class RotationProgressDialog(QDialog):
 
 
 class FadeOutPrompt(QDialog):
-    def __init__(self, *args, **kwargs):
+    """FadeOutPrompt.show()"""
+    def __init__(self, text:str, *args, duration_time=1000, **kwargs):
         super().__init__(*args, **kwargs)
+        self.text = text
+        self.duration_time = duration_time
         self.init_params()
         self.setup_ui()
+        self.animation_init()
         pass
+
+    def get_text(self):
+        return self.text
+
+    def set_text(self, text:str):
+        self.text = text
+        self.lb_content.setText(text)
+        print(self.lb_content.text())
 
     def init_params(self):
         # 依靠最外部父控件来定位中心位置
-        self.setWindowFlags(Qt.FramelessWindowHint | Qt.WindowStaysOnTopHint | Qt.WindowMaximized)
+        self.setWindowFlags(Qt.FramelessWindowHint | Qt.WindowStaysOnTopHint)
         self.setAttribute(Qt.WA_TranslucentBackground)
 
+        # 获取屏幕尺寸，动态设置字体大小
         screen_size = QApplication.primaryScreen().size()
         screen_width = screen_size.width()
         screen_height = screen_size.height()
         self.label_font = QFont()
         self.label_font.setPointSize(round(screen_height/100 if screen_height < screen_width else screen_width/100))
         self.qss = """
-                            QWidget{
-                                background-color: black;
-                                border:1px solid black;
-                                border-radius: 10%;
-                                padding-top: 20px;
-                                padding-bottom: 20px;
-                                padding-left: 30px;
-                                padding-right: 30px;
-                            }
-                            QLabel{
-                                color:white;
-                            }
-                        """
+                    QDialog{
+                        background-color: #2c2c2c;
+                        border-radius: 10%;
+                        padding-top: 20px;
+                        padding-bottom: 20px;
+                        padding-left: 30px;
+                        padding-right: 30px;
+                    }
+                    QLabel{
+                        color:white;
+                    }
+                    """
         self.setStyleSheet(self.qss)
-
-        self.opacity
         pass
 
     def setup_ui(self):
-        self.vl_center = QVBoxLayout(self)
-        self.hl_center = QHBoxLayout()
 
-        self.wd_container = QWidget()
-        self.vl_container_center = QVBoxLayout(self.wd_container)
+        self.goe_opacity = QGraphicsOpacityEffect()
+        self.setGraphicsEffect(self.goe_opacity)
+        self.vl_container_center = QVBoxLayout(self)
         self.hl_container_center = QHBoxLayout()
-        self.lb_content = QLabel("你好")
+        self.lb_content = QLabel(self.text)
         self.lb_content.setFont(self.label_font)
 
         # 使文本控件水平&垂直居中
@@ -287,23 +300,43 @@ class FadeOutPrompt(QDialog):
         self.vl_container_center.addStretch(1)
         self.vl_container_center.addLayout(self.hl_container_center)
         self.vl_container_center.addStretch(1)
-
-        self.hl_center.addStretch(1)
-        self.hl_center.addWidget(self.wd_container)
-        self.hl_center.addStretch(1)
-        self.vl_center.addStretch(1)
-        self.vl_center.addLayout(self.hl_center)
-        self.vl_center.addStretch(1)
         pass
 
+    # def animation_init(self):
+    #     self.fade_out = QPropertyAnimation(self.goe_opacity, b"opacity")
+    #     self.fade_out.setDuration(2000)
+    #     self.fade_out.setStartValue(1.0)
+    #     self.fade_out.setEndValue(0.0)
+    #     self.fade_out.start()
+    #     self.fade_out.finished.connect(lambda :print(11111111111111))
+    #     pass
 
+    def animation_init(self):
+        # 定义动画曲线
+        self.ec_opacity = QEasingCurve(QEasingCurve.InExpo)
+        # 定义动画
+        self.fade_out = QVariantAnimation()
+        self.fade_out.setDuration(self.duration_time)
+        self.fade_out.setStartValue(1.0)
+        self.fade_out.setEndValue(0.0)
+        self.fade_out.valueChanged.connect(self.running_animation)
+        self.fade_out.finished.connect(self.close)
+        self.fade_out.setEasingCurve(self.ec_opacity)
+        self.fade_out.start()
+        pass
+
+    def running_animation(self, value):
+        self.goe_opacity.setOpacity(value)
+        if value == 0:
+            self.fade_out.stop()
+        pass
 
 
 
 if __name__ == '__main__':
     app = QApplication(sys.argv)
     # w = PromptCenterTop(QMessageBox.Warning, "提示", "tttttt")
-    w = FadeOutPrompt()
-    w.exec()
+    w = FadeOutPrompt("登录成功")
+    w.show()
     sys.exit(app.exec_())
     pass
