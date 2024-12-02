@@ -476,17 +476,22 @@ class HoverCircularButton(QPushButton):
 
 
 if __name__ == '__main__':
+    # app = QApplication(sys.argv)
+    # window = QWidget()
+    # window.resize(500, 500)
+    # hl_window = QHBoxLayout(window)
+    # hl_window.setSizeConstraint(QLayout.SetNoConstraint)
+    # btn_test = HoverLargeButton('测试')
+    # btn_test_2 = QPushButton('陪衬')
+    # # hl_window.addStretch(1)
+    # hl_window.addWidget(btn_test)
+    # hl_window.addWidget(btn_test_2)
+    # # hl_window.addStretch(1)
+    # window.show()
+    # sys.exit(app.exec_())
+
     app = QApplication(sys.argv)
-    window = QWidget()
-    window.resize(500, 500)
-    hl_window = QHBoxLayout(window)
-    hl_window.setSizeConstraint(QLayout.SetNoConstraint)
-    btn_test = HoverLargeButton('测试')
-    btn_test_2 = QPushButton('陪衬')
-    # hl_window.addStretch(1)
-    hl_window.addWidget(btn_test)
-    hl_window.addWidget(btn_test_2)
-    # hl_window.addStretch(1)
+    window = SwitchButton()
     window.show()
     sys.exit(app.exec_())
     pass
